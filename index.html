@@ -5,16 +5,110 @@
         <title> WebRTC with python server</title>
     </head>
     <body>
-        <h2> STATUS </h2>
-        <p>
-            ICE gathering state: <span id="ice-gathering-state"></span>
-        </p>
-        <p>
-            ICE connection state: <span id="ice-connection-state"></span>
-        </p>
+        <section>
+            <h2> STATUS </h2>
+            <p>
+                ICE gathering state: <span id="ice-gathering-state"></span>
+            </p>
+            <p>
+                ICE connection state: <span id="ice-connection-state"></span>
+            </p>
+
+        </section>
+
+        <section>
+            <h2> Client Offer </h2>
+            <pre id="offer-sdp"> </pre>
+
+        </section>
+
+        <section>
+            <h2> Server Offer</h2>
+            <pre id="anser-sdp"></pre>
+        </section>
 
     </body>
     <script>
-        
+        let iceGSt = document.querySelector('#ice-gathering-state')
+        let iceCSt = document.getElementById('ice-connection-state')
+        let offerSDP = document.getElementById('offer-sdp')
+        let answerSDP = document.getElementById('answer-sdp')
+        //create peer Connection 
+        let pc = new RTCPeerConnection()
+
+        //show status 
+        iceGSt.textContent = pc.iceGatheringState
+        iceCSt.textContent = pc.iceConnectionState
+        //update status to show in web client
+        pc.addEventListener('icegatheringstatechange',(evt)=>{
+            iceGSt.textContent = pc.iceGatheringState
+        },false)
+        pc.addEventListener('iceconnectionstatechange', (evt)=>{
+            iceCSt.textContent = pc.iceConnectionState
+        },false)
+
+
+        //send offer 
+        const sendOffer = async (offerDescription)=>{
+            const response = await fetch('/offer',{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body: JSON.stringify(offerDescription)
+            })
+            return response.json()
+        }
+
+        //Get Media from browser
+        const processMedia = async (constrains)=>{
+            try{
+                const stream = await navigator.mediaDevices.getUserMedia(constrains)
+                stream.getTracks().forEach( (track)=>{
+                    //add new media track of peer connection instance
+                    pc.addTrack(track,stream)
+                })
+                //create SDP offer 
+                const offer = await pc.createOffer()
+                console.log(`init SDP offer looks like \n:${offer.sdp}`)
+                //ICE gathering state
+                await pc.setLocalDescription(offer)
+                //gathering network connectivity
+                await new Promise( (resolve)=>{
+                    if(pc.iceGatheringState === 'complete'){
+                        resolve()
+                    }else{
+                        const checkState=()=>{
+                            if(pc.iceGatheringState === 'complete'){
+                                pc.removeEventListener('icegatheringstatechange',checkState)
+                                resolve()
+                            }
+                        }
+                        pc.addEventListener('icegatheringstatechange',checkState)
+                    }
+                })
+                //Gathering completed - show SDP in client browser
+                // c=IN will be filled up with your local ip address
+                const offerDescription = pc.localDescription
+                offerSDP.textContent = offerDescription.sdp
+
+                //send offer to server
+                // const answer = await sendOffer(offerDescription)
+                // anserSDP.textContent = answer.sdp
+                
+            }catch(err){
+                console.log(err)
+            }
+        }
+        constrains = {
+            video:false,
+            audio:true
+        }
+        processMedia(constrains)
+
+
+
+
+
     </script>
 </html>
