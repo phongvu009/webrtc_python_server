@@ -5,7 +5,7 @@ import os
 import sys 
 from aiohttp import web
 import ssl
-
+from aiowebrtc import RTCPeerConnection
 
 
 ROOT = os.path.dirname(__file__)
@@ -21,12 +21,23 @@ async  def index(request):
     html = open(os.path.join(ROOT,'index.html'),'r').read()
     return web.Response(content_type='text/html',text=html)
 
+async def offer(request):
+    print(f'request from client {request}')
+    offer = await request.json()
+    #create peer connection
+    pc = RTCPeerConnection()
+    #save offer-client
+    await pc.setRemoteDescription(offer)
+    #generate answer to offer 
+    answer = await pc.createAnswer()
 
+    
 def main():
     app = web.Application()
     
     app.add_routes([
-        web.get('/',index)
+        web.get('/',index),
+        web.post('/offer',offer)
     ])
 
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
