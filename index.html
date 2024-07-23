@@ -93,8 +93,8 @@
                 offerSDP.textContent = offerDescription.sdp
 
                 //send offer to server
-                // const answer = await sendOffer(offerDescription)
-                // anserSDP.textContent = answer.sdp
+                const answer = await sendOffer(offerDescription)
+                anserSDP.textContent = answer.sdp
                 
             }catch(err){
                 console.log(err)
