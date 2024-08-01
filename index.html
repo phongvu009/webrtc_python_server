@@ -24,7 +24,7 @@
 
         <section>
             <h2> Server Offer</h2>
-            <pre id="anser-sdp"></pre>
+            <pre id="answer-sdp"></pre>
         </section>
 
     </body>
@@ -94,7 +94,7 @@
 
                 //send offer to server
                 const answer = await sendOffer(offerDescription)
-                anserSDP.textContent = answer.sdp
+                answerSDP.textContent = answer.sdp
                 
             }catch(err){
                 console.log(err)

@@ -2,6 +2,7 @@ import asyncio
 import datetime 
 import aioice 
 
+from . import dtls
 
 def get_ntp_seconds():
     return int ((datetime.datetime.utcnow() - datetime.datetime(1900, 1 ,1 ,0,0,0)).total_seconds() )
@@ -49,7 +50,7 @@ class RTCPeerConnection:
         if self.__iceConnection is None :
             self.__iceConnection = aioice.Connection(ice_controlling=False)
             # create new ssl session - init DtlsSrtp Session
-            self.dtlsSession = dtls.DtlsSrtpSession(self.__dtlsContext, is_server=False, tranport=self.__iceConnection)
+            self.__dtlsSession = dtls.DtlsSrtpSession(self.__dtlsContext, is_server=False, transport=self.__iceConnection)
             await self.__gather()
         #unpack SDP offer
         for line in sessionDescription['sdp'].splitlines():
@@ -62,7 +63,7 @@ class RTCPeerConnection:
                 elif attr == 'fingerprint':
                     algo, fingerprint = value.split()
                     assert algo == 'sha-256',f'needs to be sha-256'
-                    #self.__dtlsSession.remote_fingerprint == fingerprint
+                    self.__dtlsSession.remote_fingerprint == fingerprint
                 elif attr == 'ice-ufrag':
                     self.__iceConnection.remote_username = value
                 elif attr == 'ice-pwd':
@@ -82,7 +83,7 @@ class RTCPeerConnection:
         #change __iceGatheringState from gathering -->  complete
         self.__iceGatheringState = 'complete'
     
-    async def __createSdp(self) :
+    def __createSdp(self) :
         ntp_seconds = get_ntp_seconds()
         sdp = [
             'v=0',
@@ -97,7 +98,7 @@ class RTCPeerConnection:
             'c=IN IP4 %s' % default_candidate.host,
             'a=rtcp:9 IN IP4 0.0.0.0',
         ]
-        for candidate in self._iceConnection.local_candidates:
+        for candidate in self.__iceConnection.local_candidates:
             sdp += ['a=candidate:%s' % candidate.to_sdp()]
         sdp += [
             'a=ice-pwd:%s' % self.__iceConnection.local_password,

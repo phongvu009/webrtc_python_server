@@ -9,13 +9,13 @@ from aiowebrtc import RTCPeerConnection
 
 
 ROOT = os.path.dirname(__file__)
-print(ROOT)
+# print(ROOT)
 
 #Please modify ssl certificaiton path 
 cert_path = os.path.join(ROOT,'certification/cert.pem')
 cert_key_path = os.path.join(ROOT,'certification/key.pem')
 
-print(cert_path)
+# print(cert_path)
 async  def index(request):
     #read content HTML in dir
     html = open(os.path.join(ROOT,'index.html'),'r').read()
@@ -32,7 +32,7 @@ async def offer(request):
     answer = await pc.createAnswer()
     print(answer)
     await pc.setLocalDescription(answer)
-    return web.Response(context_type='application/json',
+    return web.Response(content_type='application/json',
                         text=json.dumps(pc.localDescription))
     
 def main():
