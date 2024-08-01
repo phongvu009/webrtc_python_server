@@ -30,7 +30,10 @@ async def offer(request):
     await pc.setRemoteDescription(offer)
     #generate answer to offer 
     answer = await pc.createAnswer()
-
+    print(answer)
+    await pc.setLocalDescription(answer)
+    return web.Response(context_type='application/json',
+                        text=json.dumps(pc.localDescription))
     
 def main():
     app = web.Application()
