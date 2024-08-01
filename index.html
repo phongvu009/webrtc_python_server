@@ -24,7 +24,7 @@
 
         <section>
             <h2> Server Offer</h2>
-            <pre id="anser-sdp"></pre>
+            <pre id="answer-sdp"></pre>
         </section>
 
     </body>
@@ -92,9 +92,11 @@
                 const offerDescription = pc.localDescription
                 offerSDP.textContent = offerDescription.sdp
 
-                //send offer to server
+                //send offer to server and get response
                 const answer = await sendOffer(offerDescription)
-                anserSDP.textContent = answer.sdp
+                answerSDP.textContent = answer.sdp
+                //
+                pc.setRemoteDescription(answer)
                 
             }catch(err){
                 console.log(err)
