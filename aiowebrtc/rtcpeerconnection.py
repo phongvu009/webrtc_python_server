@@ -52,6 +52,7 @@ class RTCPeerConnection:
             # create new ssl session - init DtlsSrtp Session
             #Creates a DtlsSrtpSession with is_server=False (server acts as DTLS client)
             self.__dtlsSession = dtls.DtlsSrtpSession(self.__dtlsContext, is_server=False, transport=self.__iceConnection)
+            #gether candidate info
             await self.__gather()
         #unpack SDP offer
         for line in sessionDescription['sdp'].splitlines():
