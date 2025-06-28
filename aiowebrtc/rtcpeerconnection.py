@@ -50,6 +50,7 @@ class RTCPeerConnection:
         if self.__iceConnection is None :
             self.__iceConnection = aioice.Connection(ice_controlling=False)
             # create new ssl session - init DtlsSrtp Session
+            #Creates a DtlsSrtpSession with is_server=False (server acts as DTLS client)
             self.__dtlsSession = dtls.DtlsSrtpSession(self.__dtlsContext, is_server=False, transport=self.__iceConnection)
             await self.__gather()
         #unpack SDP offer
@@ -63,7 +64,7 @@ class RTCPeerConnection:
                 elif attr == 'fingerprint':
                     algo, fingerprint = value.split()
                     assert algo == 'sha-256',f'needs to be sha-256'
-                    self.__dtlsSession.remote_fingerprint == fingerprint
+                    self.__dtlsSession.remote_fingerprint = fingerprint
                 elif attr == 'ice-ufrag':
                     self.__iceConnection.remote_username = value
                 elif attr == 'ice-pwd':
